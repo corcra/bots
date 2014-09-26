@@ -13,22 +13,24 @@ def twittersplit(line):
     if len(line)<maxlength:
         return line
     else:
-        spaces = [m.start() for m in re.finditer(' ',line)]
-        breakpoints = [ 
         nsplit = int(math.ceil(float(len(line))/(maxlength-10)))
-        newline = ''
-        for i in xrange(nsplit):
-            closest_space = 
-        newline = ''
-        stoppoint=0
-        for i in xrange(nsplit):
-            
-#        return ''
         newline = ''
         for i in xrange(nsplit):
             newline = newline+line[i*(maxlength-10):(i+1)*(maxlength-10)]+'['+str(i+1)+'/'+str(nsplit)+']\n'
         return newline.replace('\\','')
 
+    # this bit here is the starts of the 'making it not cut up words' improvement
+#    else:
+#        spaces = [m.start() for m in re.finditer(' ',line#)]
+#        breakpoints = [ 
+#        newline = ''
+#        for i in xrange(nsplit):
+#            closest_space = 
+#        newline = ''
+#        stoppoint=0
+#        for i in xrange(nsplit):
+            
+        
 buffline = ''
 line = infile.readline()
 while line:
