@@ -1,72 +1,90 @@
 #!/bin/python
-# I eat books!
-# I give you tweets!
-# READ A BOOOK READ A BOOK
-# READ A MOTHERFUCKING BOOK
+"""
+I eat books!
+I give you tweets!
+READ A BOOOK READ A BOOK
+READ A MOTHERFUCKING BOOK
+"""
 import math
 import re
 import sys
 
-if len(sys.argv)<2:
+if len(sys.argv) < 2:
     sys.exit('USAGE: twitterfy.py filepath')
-infile = open(sys.argv[1],'r')
-outfile = open(sys.argv[1]+'.twit','w')
+INFILE = open(sys.argv[1], 'r')
+OUTFILE = open(sys.argv[1]+'.twit', 'w')
 
 # --- options --- #
-encoding = 'utf-8'
-global maxlength, minlength
-maxlength, minlength = 135, 80
+ENCODING = 'utf-8'
+MAXLENGTH, MINLENGTH = 135, 80
 
 # --- functions --- #
 def highest_before(seq, maximum):
-    for i in xrange(len(seq)):
+    """
+    Finds the largest entry in seq smaller than maximum.
+    Seq must be a list of integers.
+    Also returns the index of this entry.
+    """
+    for j in xrange(len(seq)):
         val = seq[i]
         if val > maximum:
-            return i-1, seq[i-1]
+            return j-1, seq[j-1]
     return len(seq), seq[-1]
 
-def twitter_split(sentence, maxlen):
+def twitter_split(string, maxlen):
+    """
+    Takes a long string/sentence and a specified maximum length,
+    splits it into multiple 'lines' suitable for tweeting,
+    recording how many splits were made.
+    """
     # find spaces
-    spaces = [m.start() for m in re.finditer(' ', sentence)]
+    spaces = [mm.start() for mm in re.finditer(' ', string)]
     # initialise some things
     oldcut, nsplit, newline = -1, 1, ''
     # find last space before the cutoff
     where, newcut = highest_before(spaces, maxlen)
     while not newcut == spaces[-1]:
-        newline = newline + sentence[oldcut+1:newcut]+' ('+str(nsplit)+'/NSPLITZ)\n'
+        newbit = string[oldcut+1:newcut]+' ('+str(nsplit)+'/NSPLITZ)\n'
+        newline = newline + newbit
         oldcut = newcut
         where, newcut = highest_before(spaces[where:], newcut + maxlen)
         nsplit += 1
-    newline = newline + sentence[oldcut+1:]+'('+str(nsplit)+'/NSPLITZ)'
-    newline = re.sub('NSPLITZ',str(nsplit),newline)
+    newbit = string[oldcut+1:]+'('+str(nsplit)+'/NSPLITZ)'
+    newline = newline + newbit
+    newline = re.sub('NSPLITZ', str(nsplit), newline)
     return newline
 
-def record_sentence(sentence, outfile):
-    if len(sentence) > 3:
-        # prep the sentence a little
-        sen = sentence.lstrip(' ') 
-        if len(sen) < maxlength:
+def record_sentence(string, ofile):
+    """
+    Saves a sentence/string to ofile.
+    First checks if it is too long/short to tweet,
+    splits up if too long.
+    """
+    if len(string) > 3:
+        # prep the string a little
+        sen = string.lstrip(' ')
+        if len(sen) < MAXLENGTH:
             # all goood!
-            print sen.encode(encoding)
-            outfile.write(sen.encode(encoding)+'\n')
+            print sen.encode(ENCODING)
+            ofile.write(sen.encode(ENCODING)+'\n')
         else:
             # need to split it up
-            # find maxlength!
-            nsplits = math.ceil(float(len(sen))/maxlength)
+            # find MAXLENGTH!
+            nsplits = math.ceil(float(len(sen))/MAXLENGTH)
             temp_maxlen = int(math.floor(len(sen)/nsplits))
             split_sen = twitter_split(sen, temp_maxlen)
-            print split_sen.encode(encoding)
-            outfile.write(split_sen.encode(encoding)+'\n')
+            print split_sen.encode(ENCODING)
+            ofile.write(split_sen.encode(ENCODING)+'\n')
     return True
 
 # --- do things ! --- #
-sentence = ''
-for line in infile:
-    ldec = line.decode(encoding).strip()
+SENTENCE = ''
+for line in INFILE:
+    ldec = line.decode(ENCODING).strip()
     if len(ldec) == 0:
         # empty, probably a paragraph break
-        record_sentence(sentence, outfile)
-        sentence = ''
+        record_sentence(SENTENCE, OUTFILE)
+        SENTENCE = ''
     else:
         # not empty
         if '. ' in ldec or '? ' in ldec:
@@ -74,18 +92,18 @@ for line in infile:
             breakers = [m.start() for m in re.finditer('[.?] ', ldec)]
             i = 0
             # split on these
-            for fragment in re.split('[.?] ',ldec)[:-1]:
-                sentence += ' '+fragment+ldec[breakers[i]]
-                i+=1
+            for fragment in re.split('[.?] ', ldec)[:-1]:
+                SENTENCE += ' '+fragment+ldec[breakers[i]]
+                i += 1
                 #'.'
-                if len(sentence) > minlength:
-                    record_sentence(sentence, outfile)
-                    sentence = ''
-                else: 
+                if len(SENTENCE) > MINLENGTH:
+                    record_sentence(SENTENCE, OUTFILE)
+                    SENTENCE = ''
+                else:
                     continue
-            sentence = re.split('[.?] ',ldec)[-1]
+            SENTENCE = re.split('[.?] ', ldec)[-1]
         else:
             # add to growing sentence!
-            sentence += ' '+ldec
-record_sentence(sentence, outfile)
-outfile.close()
+            SENTENCE += ' '+ldec
+record_sentence(SENTENCE, OUTFILE)
+OUTFILE.close()
