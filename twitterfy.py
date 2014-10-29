@@ -59,6 +59,7 @@ def record_sentence(sentence, outfile):
             outfile.write(split_sen.encode(encoding)+'\n')
     return True
 
+# --- do things ! --- #
 sentence = ''
 for line in infile:
     ldec = line.decode(encoding).strip()
