@@ -26,7 +26,7 @@ def highest_before(seq, maximum):
     Also returns the index of this entry.
     """
     for j in xrange(len(seq)):
-        val = seq[i]
+        val = seq[j]
         if val > maximum:
             return j-1, seq[j-1]
     return len(seq), seq[-1]
@@ -87,23 +87,29 @@ for line in INFILE:
         SENTENCE = ''
     else:
         # not empty
-        if '. ' in ldec or '? ' in ldec:
-            # find the . and ?
-            breakers = [m.start() for m in re.finditer('[.?] ', ldec)]
-            i = 0
-            # split on these
-            for fragment in re.split('[.?] ', ldec)[:-1]:
-                SENTENCE += ' '+fragment+ldec[breakers[i]]
-                i += 1
-                #'.'
-                if len(SENTENCE) > MINLENGTH:
-                    record_sentence(SENTENCE, OUTFILE)
-                    SENTENCE = ''
-                else:
-                    continue
-            SENTENCE = re.split('[.?] ', ldec)[-1]
-        else:
-            # add to growing sentence!
+        if len(ldec+SENTENCE) < MAXLENGTH:
+            # proceed as normal
             SENTENCE += ' '+ldec
+        else:
+            # need to split it somewhere, look for full stops...
+            if '. ' in ldec or '? ' in ldec:
+                # find the . and ?
+                breakers = [m.start() for m in re.finditer('[.?] ', ldec)]
+                i = 0
+                # split on these
+                for fragment in re.split('[.?] ', ldec)[:-1]:
+                    SENTENCE += ' '+fragment+ldec[breakers[i]]
+                    i += 1
+                    #'.'
+                    if len(SENTENCE) > MINLENGTH:
+                        record_sentence(SENTENCE, OUTFILE)
+                        SENTENCE = ''
+                    else:
+                        continue
+                record_sentence(SENTENCE, OUTFILE)
+                SENTENCE = re.split('[.?] ', ldec)[-1]
+            else:
+                # add to growing sentence!
+                SENTENCE += ' '+ldec
 record_sentence(SENTENCE, OUTFILE)
 OUTFILE.close()
