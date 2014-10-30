@@ -5,93 +5,116 @@ import re
 
 characters = set(['WOMAN','SECRET SERVICE AGENT','AGENT','PROSECUTOR','JUDGE','MRS. MURPHY','DADE','NORM','COMMENTATOR','KID','GIRL','KATE','GUY','GEEK','TEACHER','PHREAK','JOEY','CEREAL','OPERATOR','CURTIS','PLAGUE','HAL','NIKON','BOTH','GILL','RAZOR','BLADE','ALL BUT DADE','SS AGENT',"JOEY\'S MOM",'ANOTHER AGENT','AGENT RAY','REPORTER','JENNIFER','MARGO','VIRUS','BOARD MEMBER','DUKE ELLINGSON','SUIT #1','SUIT #2','SECRET SERVICE AGENT BOB','AGENT BOB','LISA','VICKIE','HANK','CALLER','EMPLOYEE','COP','SYSOP','SOMEONE','STEWARDESS'])
 
-infile = open('../hackers_script.txt','r')
-outfile = open('hackers_parsed_3.txt','w')
+INFILE = open('hackers.txt','r')
+OUTFILE = open('hackers_parsed_4.txt','w')
 
-def lowestbefore(seq, maximum):
-    for i in xrange(len(seq)):
-        val = seq[i]
+# --- options --- #
+ENCODING = 'utf-8'
+MAXLENGTH, MINLENGTH = 135, 110
+#
+# --- functions --- #
+def highest_before(seq, maximum):
+    """
+    Finds the largest entry in seq smaller than maximum.
+    Seq must be a list of integers.
+    Also returns the index of this entry.
+    """
+    for j in xrange(len(seq)):
+        val = seq[j]
         if val > maximum:
-            return seq[i-1]
-    # if it hasn't returned anything yet, then...
-    # nothing in the sequence is larger than the maximum
-    # so how did this happen?
-    # why would this ever happen?
-    # i am confused and hungry
-    return None
-        
-def twittersplit(line):
-    maxlength = 140
-    if len(line)<maxlength:
-        return line
+            return j-1, seq[j-1]
+    return len(seq), seq[-1]
+
+def twitter_split(string, maxlen):
+    """
+    Takes a long string/sentence and a specified maximum length,
+    splits it into multiple 'lines' suitable for tweeting,
+    recording how many splits were made.
+    """
+    #find spaces
+    spaces = [mm.start() for mm in re.finditer(' ', string)]
+    # initialise some things
+    oldcut, nsplit, newline = -1, 1, ''
+    # find last space before the cutoff
+    where, newcut = highest_before(spaces, maxlen)
+    while not newcut == spaces[-1]:
+        newbit = string[oldcut+1:newcut]+' ('+str(nsplit)+'/NSPLITZ)\n'
+        newline = newline + newbit
+        oldcut = newcut
+        where, newcut = highest_before(spaces[where:], newcut + maxlen)
+        nsplit += 1
+    newbit = string[oldcut+1:]+'('+str(nsplit)+'/NSPLITZ)'
+    newline = newline + newbit
+    newline = re.sub('NSPLITZ', str(nsplit), newline)
+    return newline
+
+def record_sentence(string, ofile):
+    """
+    Saves a sentence/string to ofile.
+    First checks if it is too long/short to tweet,
+    splits up if too long.
+    """
+    print string
+    print len(string)
+    if len(string) > 3:
+        # prep the string a little
+        sen = string.lstrip(' ')
+        if len(sen) < MAXLENGTH:
+            # all goood!
+            print sen.encode(ENCODING)
+            ofile.write(sen.encode(ENCODING)+'\n')
+        else:
+            # need to split it up
+            # find MAXLENGTH!
+            nsplits = math.ceil(float(len(sen))/MAXLENGTH)
+            temp_maxlen = int(math.floor(len(sen)/nsplits))
+            split_sen = twitter_split(sen, temp_maxlen)
+            print split_sen.encode(ENCODING)
+            ofile.write(split_sen.encode(ENCODING)+'\n')
+    return True
+
+SENTENCE = ''
+for line in INFILE:
+    ldec = line.decode(ENCODING).strip()
+    if len(ldec) == 0:
+        # empty, probably paragraph break
+        record_sentence(SENTENCE, OUTFILE)
+        SENTENCE = ''
     else:
-        # find the spaces
-        spaces = [m.start() for m in re.finditer(' ', line)]
-        # initialise some stuff
-        oldcut = -1
-        nsplit = 1
-        newline = ''
-        # find the last space before the cutoff
-        newcut = lowestbefore(spaces, maxlength)
-        while newcut:
-            newline = newline + line[oldcut+1:newcut]+'['+str(nsplit)+'/NSPLITZ]\n'
-            oldcut = newcut
-            newcut = lowestbefore(spaces[newcut:], (nsplit+1)*maxlength)
-            nsplit += 1
-        newline = newline + line[oldcut+1:newcut]+'['+str(nsplit)+'/NSPLITZ]\n'
-        newline = re.sub('NSPLITZ',str(nsplit),newline)
-        return newline
+        if ldec in characters:
+            print 'Character detected!', ldec
+            record_sentence(SENTENCE, OUTFILE)
+            SENTENCE = ldec+':'
+        elif ldec == ldec.upper():
+            if SENTENCE == SENTENCE.upper():
+                # continuation of something...
+                SENTENCE += ' '+ldec
+            else:
+                print 'Setting detected!', ldec
+                record_sentence(SENTENCE, OUTFILE)
+                record_sentence(ldec, OUTFILE)
+                SENTENCE = ''
+        else:
+            # not empty
+            # check length
+            if len(ldec+SENTENCE) < MAXLENGTH:
+                SENTENCE += ' '+ldec
+            else:
+                if '. ' in ldec or '? ' in ldec:
+                    # find the . and ?
+                    breakers = [m.start() for m in re.finditer('[.?] ', ldec)]
+                    i = 0
+                    # split on these
+                    for fragment in re.split('[.?] ', ldec)[:-1]:
+                        SENTENCE += ' '+fragment+ldec[breakers[i]]
+                        i += 1
+                        if len(SENTENCE) > MINLENGTH:
+                            record_sentence(SENTENCE, OUTFILE)
+                            SENTENCE = ''
+                        else:
+                            continue
+                    record_sentence(SENTENCE, OUTFILE)
+                    SENTENCE = re.split('[.?] ', ldec)[-1]
 
-        #
-#        nsplit = int(math.ceil(float(len(line))/(maxlength-10)))
-#        newline = ''
-#        for i in xrange(nsplit):
-#            newline = newline+line[i*(maxlength-10):(i+1)*(maxlength-10)]+'['+str(i+#1)+'/'+str(nsplit)+']\n'
-#        return newline.replace('\\','')
-
-    # this bit here is the starts of the 'making it not cut up words' improvement
-#    else:
-#        spaces = [m.start() for m in re.finditer(' ',line#)]
-#        breakpoints = [ 
-#        newline = ''
-#        for i in xrange(nsplit):
-#            closest_space = 
-#        newline = ''
-#        stoppoint=0
-#        for i in xrange(nsplit):
-            
-        
-buffline = ''
-line = infile.readline()
-while line:
-    lp = line.strip()
-    if lp in characters:
-        print 'Character detected!',lp
-        # character is speaking!
-        if len(buffline)>1: outfile.write(twittersplit(buffline)+'\n')
-        buffline = lp+':'
-        while len(line)>1:
-            line = infile.readline()
-            buffline += ' '+line.strip()
-#    elif lp.upper() == lp and len(line)>1:
-#        # must be a location!
-#        print 'Location detected!',lp
-#        if len(buffline)>1: outfile.write(twittersplit(buffline)+'\n')
-#        buffline = lp
-#        buffline = ''
-#        while len(line)>1:
-#            line = infile.readline()
-#            buffline += ' '+line.strip()
-    elif len(line)>1:
-        # must be a description or something
-        print 'Normal text detected!',lp
-        if len(buffline)>1: outfile.write(twittersplit(buffline)+'\n')
-        buffline = lp
-        while len(line)>1:
-            line = infile.readline()
-            buffline += ' '+line.strip()
-    line = infile.readline()
-
-if len(buffline)>1: outfile.write(twittersplit(buffline)+'\n')
-outfile.write(twittersplit(buffline)+'\n')
-outfile.close()
+record_sentence(SENTENCE, OUTFILE)
+OUTFILE.close()
