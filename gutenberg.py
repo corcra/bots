@@ -15,7 +15,7 @@ outfile = open(sys.argv[1]+'.twit','w')
 # --- options --- #
 encoding = 'utf-8'
 global MAXLENGTH, MINLENGTH
-MAXLENGTH, MINLENGTH = 135, 90
+MAXLENGTH, MINLENGTH = 135, 50
 
 # --- functions --- #
 def highest_before(seq, maximum):
@@ -54,6 +54,7 @@ def twitter_split(string, maxlen):
     return newline
         
 def record_sentence(sentence, outfile):
+    sentence = re.sub('  ',' ',sentence)
     if len(sentence) > 0:
         # prep the sentence a little
         sen = sentence.lstrip(' ') 
