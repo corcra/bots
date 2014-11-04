@@ -37,7 +37,7 @@ function readbook() {
     }
     match_array = quote.match(re);
     if (match_array != null) {
-	tweet_parts = match_array[2]-1-i;
+	tweet_parts = match_array[2]-1;
         i = 0;
     }
     else {
