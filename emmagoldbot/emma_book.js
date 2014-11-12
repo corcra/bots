@@ -12,21 +12,35 @@ var tweet_parts, i=0;
 var re = /\(([0-9]+)\/([0-9]+)\)$/;
 var quote = data[linenum];
 
-function post_next_if_multi(error, response) {
+function post_no_next(error, response) {
     if (response) {
-	console.log('~\n!!\n~anarchy~\n!!\n~');
-	console.log(linenum);
+	console.log(quote);
+	console.log("\n");
 	linenum += 1;
 	quote = data[linenum];
-	if (i < tweet_parts) {
-	    i+=1;
-	    T.post('statuses/update', { status: quote }, post_next_if_multi);
-	} else {
-	    i=0;
+    }
+    if (error) {
+	console.log("Twitter Error: ", error);
+    }
+}
+
+function post_next_if_multi(error, response) {
+    var match_array;
+    if (response) {
+	console.log(quote);
+	linenum += 1;
+	quote = data[linenum];
+	match_array = quote.match(re);
+	if (match_array) {
+	    if (match_array[1] == match_array[2]) {
+		T.post('statuses/update', { status: quote }, post_no_next);
+	    } else if (match_array[1] < match_array[2]) {
+		readbook();
+	    }
 	}
     }
     if (error) {
-	console.log('Error with twitter:',error);
+	console.log('Twitter Error: ',error);
     }
 }
 
@@ -36,15 +50,13 @@ function readbook() {
 	return;
     }
     match_array = quote.match(re);
-    if (match_array != null) {
-	tweet_parts = match_array[2]-1;
-        i = 0;
+    if (match_array) {
+	T.post('statuses/update', { status: quote }, post_next_if_multi);
+    } else {
+	T.post('statuses/update', { status: quote }, post_no_next);
     }
-    else {
-	tweet_parts = 1;
-    }
-    T.post('statuses/update', { status: quote }, post_next_if_multi);
 }
+
 
 readbook();
 // DO THE STUFF
