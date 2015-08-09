@@ -16,7 +16,7 @@ api = tweepy.API(auth)
 # --- search for tweets containing a random selector term --- #
 def retweet_selector(selector):
     # grab a tweet containing this term
-    tweet = api.search(q=selector).pop()
+    tweet = api.search(q=selector, lang='en').pop()
     print 'Retweeting', tweet.text, 'from user', tweet.user.screen_name, 'because',
     print 'it contains selector term:', selector
     # retweet it
