@@ -17,11 +17,13 @@ api = tweepy.API(auth)
 def retweet_selector(selector):
     # grab a tweet containing this term
     tweet = api.search(q=selector, lang='en').pop()
+    while not selector in tweet.text:
+        # basically enforces same case
+        tweet = api.search(q=selector, lang='en').pop()
     print 'Retweeting', tweet.text, 'from user', tweet.user.screen_name, 'because',
     print 'it contains selector term:', selector
     # retweet it
     api.retweet(tweet.id)
-
 
 # --- main etc ? --- #
 while True:
