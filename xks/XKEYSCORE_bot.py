@@ -6,7 +6,8 @@ from creds import consumer_key, consumer_secret, access_token, access_token_secr
 from random import sample
 from time import sleep
 
-selector_terms = load('terms.npy').item()
+# --- get terms --- #
+selector_terms = set(map(lambda x: x.strip('\n'), open('terms.txt','r').readlines()))
 
 # --- set up API --- #
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
