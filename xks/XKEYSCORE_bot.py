@@ -1,7 +1,6 @@
-#!/bin/python
+#!/usr/bin/env python3
 
 import tweepy
-from numpy import load
 from creds import consumer_key, consumer_secret, access_token, access_token_secret
 from random import sample
 from time import sleep
@@ -21,8 +20,8 @@ def retweet_selector(selector):
     while not selector in tweet.text:
         # basically enforces same case
         tweet = api.search(q=selector, lang='en').pop()
-    print 'Retweeting', tweet.text, 'from user', tweet.user.screen_name, 'because',
-    print 'it contains selector term:', selector
+    print('Retweeting', '\"' + tweet.text + '\" from user', tweet.user.screen_name,
+          'because it contains selector term:', selector)
     # retweet it
     api.retweet(tweet.id)
 
@@ -31,3 +30,4 @@ while True:
     selector = sample(selector_terms, 1)[0]
     retweet_selector(selector)
     sleep(15*60)
+
