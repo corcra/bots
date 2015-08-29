@@ -1,0 +1,3 @@
+*.swp
+creds.py
+__pycache__
