@@ -28,6 +28,13 @@ def retweet_selector(selector):
 # --- main etc ? --- #
 while True:
     selector = sample(selector_terms, 1)[0]
-    retweet_selector(selector)
-    sleep(15*60)
+    try:
+        retweet_selector(selector)
+        sleep(15 * 60)
+    except tweepy.error.TweepError as e:
+        print(e)
+        sleep(15 * 60)
+    except Exception as e:
+        print(e)
+        raise
 
