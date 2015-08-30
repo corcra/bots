@@ -18,13 +18,10 @@ api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 def retweet_selector(selector):
     # grab a tweet containing this term
     search = " OR ".join(selector)
-    print("selectors:", ", ".join(selector))
     tweet = api.search(q=search, lang='en').pop()
-    #while not selector in tweet.text:
-        # basically enforces same case
-        #tweet = api.search(q=search, lang='en').pop()
-    print('Retweeting', '\"' + unescape(tweet.text) + '\" from user', tweet.user.screen_name)
-          #'because it contains selector term:', selector)
+    print("\033[1m"+"Selectors:"+"\033[0m", ", ".join(selector))
+    print("\033[1m"+'Retweeting'+"\033[0m", '\"' + unescape(tweet.text) + '\" from',
+            "@"+tweet.user.screen_name)
     # retweet it
     api.retweet(tweet.id)
 
