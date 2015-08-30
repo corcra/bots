@@ -4,6 +4,7 @@ import tweepy
 from creds import consumer_key, consumer_secret, access_token, access_token_secret
 from random import sample
 from time import sleep
+from html import unescape
 
 # --- get terms --- #
 selector_terms = set(map(lambda x: x.strip('\n'), open('terms.txt','r').readlines()))
@@ -22,7 +23,7 @@ def retweet_selector(selector):
     #while not selector in tweet.text:
         # basically enforces same case
         #tweet = api.search(q=search, lang='en').pop()
-    print('Retweeting', '\"' + tweet.text + '\" from user', tweet.user.screen_name)
+    print('Retweeting', '\"' + unescape(tweet.text) + '\" from user', tweet.user.screen_name)
           #'because it contains selector term:', selector)
     # retweet it
     api.retweet(tweet.id)
