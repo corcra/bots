@@ -19,9 +19,8 @@ def retweet_selector(selector):
     # grab a tweet containing this term
     search = " OR ".join(selector)
     tweet = api.search(q=search, lang='en').pop()
-    print("\033[1m"+"Selectors:"+"\033[0m", ", ".join(selector))
-    print("\033[1m"+'Retweeting'+"\033[0m", '\"' + unescape(tweet.text) + '\" from',
-            "@"+tweet.user.screen_name)
+    print("Selectors:", ", ".join(selector))
+    print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
     # retweet it
     api.retweet(tweet.id)
 
