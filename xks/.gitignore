@@ -1,3 +1,4 @@
 *.swp
+*.sh
 creds.py
 __pycache__
