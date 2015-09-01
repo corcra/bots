@@ -20,9 +20,14 @@ def retweet_selector(selector):
     search = " OR ".join(selector)
     tweet = api.search(q=search, lang='en').pop()
     print("Selectors:", ", ".join(selector))
-    print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
-    # retweet it
-    api.retweet(tweet.id)
+    if any(x in tweet.user.screen_name for x in selector):
+        print("Selector was in @" + tweet.user.screen_name)
+        sleep(30)
+        retweet_selector(selector)
+    else:
+        print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
+        # retweet it
+        #api.retweet(tweet.id)
 
 # --- main etc ? --- #
 while True:
