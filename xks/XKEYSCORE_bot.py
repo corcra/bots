@@ -14,27 +14,31 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
+def criteria(selector, tweet):
+    if (any(x not in tweet.user.screen_name for x in selector) and
+        ("RT" not in tweet.text) and
+        ("t.co" not in tweet.text)):
+        return True
+    else:
+        return False
+
 # --- search for tweets containing a random selector term --- #
 def retweet_selector(selector):
     # grab a tweet containing this term
     search = " OR ".join(selector)
     tweet = api.search(q=search, lang='en').pop()
-    print("Selectors:", ", ".join(selector))
-    if any(x in tweet.user.screen_name for x in selector):
-        print("Selector was in @" + tweet.user.screen_name)
-        sleep(30)
-        retweet_selector(selector)
-    else:
+    if criteria(selector, tweet):
+        print("Selectors:", ", ".join(selector))
         print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
         # retweet it
-        #api.retweet(tweet.id)
+        api.retweet(tweet.id)
+        sleep(15 * 60)
 
 # --- main etc ? --- #
 while True:
     selector = sample(selector_terms, 8)
     try:
         retweet_selector(selector)
-        sleep(15 * 60)
     except tweepy.error.TweepError as e:
         print(e)
         sleep(15 * 60)
