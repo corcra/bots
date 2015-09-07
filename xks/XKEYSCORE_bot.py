@@ -32,7 +32,7 @@ def retweet_selector(selector):
         print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
         # retweet it
         api.retweet(tweet.id)
-        sleep(15 * 60)
+        sleep(60 * 60)
 
 # --- main etc ? --- #
 while True:
