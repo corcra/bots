@@ -1,0 +1,5 @@
+*.swp
+*.sh
+*.cpp
+creds.py
+__pycache__

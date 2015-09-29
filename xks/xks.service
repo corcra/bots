@@ -1,0 +1,12 @@
+# /etc/systemd/system/xks.service
+[Unit]
+Description=XKeyscore Twitter bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/xks/
+ExecStart=/usr/bin/env python3 -u /path/to/xks/XKEYSCORE_bot.py
+StandardOutput=syslog
+StandardError=syslog
+
