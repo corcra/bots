@@ -5,6 +5,7 @@ from creds import consumer_key, consumer_secret, access_token, access_token_secr
 from random import sample
 from time import sleep
 from html import unescape
+import re
 
 # --- get terms --- #
 selector_terms = set(map(lambda x: x.strip('\n'), open('terms.txt','r').readlines()))
@@ -15,12 +16,14 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 def criteria(selector, tweet):
-    if (any(x not in tweet.user.screen_name for x in selector) and
-        ("RT" not in tweet.text) and
-        ("t.co" not in tweet.text)):
-        return True
-    else:
+    if ("RT" in tweet.text) or ("t.co" in tweet.text):
         return False
+    for element in selector:
+        if (element in tweet.user.screen_name.lower() or
+            re.search("@[a-zA-Z0-9_]*" + element + "[a-zA-Z0-9_]*", tweet.text.lower())):
+            # don't use tweets selected by a handle
+            return False
+    return True
 
 # --- search for tweets containing a random selector term --- #
 def retweet_selector(selector):
@@ -29,7 +32,7 @@ def retweet_selector(selector):
     tweet = api.search(q=search, lang='en').pop()
     if criteria(selector, tweet):
         print("Selectors:", ", ".join(selector))
-        print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
+        print('Retweeting', '\"' + unescape(tweet.text) + '\" from @' + tweet.user.screen_name)
         # retweet it
         api.retweet(tweet.id)
         sleep(60 * 60)
@@ -42,7 +45,7 @@ while True:
     except tweepy.error.TweepError as e:
         print(e)
         sleep(15 * 60)
-    except IndexError as e:
+    except IndexError as e:  # in case the search results list is empty
         print("IndexError:", e)
         sleep(15)
     except Exception as e:
