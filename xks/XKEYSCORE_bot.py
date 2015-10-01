@@ -26,13 +26,12 @@ def criteria(selector, tweet):
 def retweet_selector(selector):
     # grab a tweet containing this term
     search = " OR ".join(selector)
-    #tweet = api.search(q=search, lang='en').pop()
-    tweet = [].pop()
+    tweet = api.search(q=search, lang='en').pop()
     if criteria(selector, tweet):
         print("Selectors:", ", ".join(selector))
         print('Retweeting', '\"' + unescape(tweet.text) + '\" from @'+tweet.user.screen_name)
         # retweet it
-        #api.retweet(tweet.id)
+        api.retweet(tweet.id)
         sleep(60 * 60)
 
 # --- main etc ? --- #
