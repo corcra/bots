@@ -29,25 +29,28 @@ def criteria(selector, tweet):
 def retweet_selector(selector):
     # grab a tweet containing this term
     search = " OR ".join(selector)
-    tweet = api.search(q=search, lang='en').pop()
-    if criteria(selector, tweet):
-        print("Selectors:", ", ".join(selector))
-        print('Retweeting', '\"' + unescape(tweet.text) + '\" from @' + tweet.user.screen_name)
-        # retweet it
-        api.retweet(tweet.id)
-        sleep(60 * 60)
+    tweets = api.search(q=search, lang='en')
+    tweets[:] = [tweet for tweet in tweets if criteria(selector, tweet)]
+    tweet = tweets.pop(0)
+
+    print("Selectors:", ", ".join(selector))
+    print('Retweeting', '\"' + unescape(tweet.text) + '\" from @' + tweet.user.screen_name)
+
+    # retweet it
+    api.retweet(tweet.id)
 
 # --- main etc ? --- #
 while True:
     selector = sample(selector_terms, 8)
     try:
         retweet_selector(selector)
+        sleep(20)
     except tweepy.error.TweepError as e:
         print(e)
         sleep(15 * 60)
     except IndexError as e:  # in case the search results list is empty
         print("IndexError:", e)
-        sleep(15)
+        sleep(10)
     except Exception as e:
         print(e)
         raise
