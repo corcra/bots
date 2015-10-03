@@ -44,7 +44,7 @@ while True:
     selector = sample(selector_terms, 8)
     try:
         retweet_selector(selector)
-        sleep(20)
+        sleep(15 * 60)
     except tweepy.error.TweepError as e:
         print(e)
         sleep(15 * 60)
