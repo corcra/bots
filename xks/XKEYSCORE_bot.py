@@ -5,7 +5,6 @@ from creds import consumer_key, consumer_secret, access_token, access_token_secr
 from random import sample
 from time import sleep
 from html import unescape
-import re
 
 # --- get terms --- #
 selector_terms = set(map(lambda x: x.strip('\n'), open('terms.txt','r').readlines()))
@@ -19,10 +18,12 @@ def criteria(selector, tweet):
     if ("RT" in tweet.text) or ("t.co" in tweet.text):
         return False
     for element in selector:
-        if (element in tweet.user.screen_name.lower() or
-            re.search("@[a-zA-Z0-9_]*" + element + "[a-zA-Z0-9_]*", tweet.text.lower())):
-            # don't use tweets selected by a handle
-            return False
+        if element in tweet.user.screen_name.lower():  # don't select based
+            return False                               # on handle
+        if tweet.entities.get("user_mentions"):
+            for mention in tweet.entities.get("user_mentions"):
+                if element in mention["screen_name"].lower():
+                    return False
     return True
 
 # --- search for tweets containing a random selector term --- #
