@@ -28,9 +28,9 @@ def criteria(selector, tweet):
 
 # --- search for tweets containing a random selector term --- #
 def retweet_selector(selector):
-    # grab a tweet containing this term
+    # grab a tweet containing these terms
     search = " OR ".join(selector)
-    tweets = api.search(q=search, lang='en')
+    tweets = api.search(q=search, lang='en', count=100)
     tweets[:] = [tweet for tweet in tweets if criteria(selector, tweet)]
     tweet = tweets.pop(0)
 
@@ -49,9 +49,9 @@ while True:
     except tweepy.error.TweepError as e:
         print(e)
         sleep(15 * 60)
-    except IndexError as e:  # in case the search results list is empty
-        print("IndexError:", e)
-        sleep(10)
+    except IndexError:
+        print("No results for", ", ".join(selector))  # in case the list of
+        sleep(5)                                      # tweets is empty
     except Exception as e:
         print(e)
         raise
